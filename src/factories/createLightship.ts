@@ -37,15 +37,18 @@ const log = Logger.child({
 
 const {
   LIGHTSHIP_PORT,
-// eslint-disable-next-line node/no-process-env
+  // eslint-disable-next-line node/no-process-env
 } = process.env;
 
 const defaultConfiguration: Configuration = {
   detectKubernetes: true,
-  gracefulShutdownTimeout: 30_000,
-  port: LIGHTSHIP_PORT ? Number(LIGHTSHIP_PORT) : 9_000,
-  shutdownDelay: 5_000,
-  shutdownHandlerTimeout: 5_000,
+  gracefulShutdownTimeout: 30000,
+  port: LIGHTSHIP_PORT ? Number(LIGHTSHIP_PORT) : 9000,
+  healthProbeEndpoint: '/health',
+  livenessProbeEndpoint: '/live',
+  readinessProbeEndpoint: '/ready',
+  shutdownDelay: 5000,
+  shutdownHandlerTimeout: 5000,
   signals: [
     'SIGTERM',
     'SIGHUP',
@@ -54,7 +57,7 @@ const defaultConfiguration: Configuration = {
   terminate: () => {
     // eslint-disable-next-line node/no-process-exit
     process.exit(1);
-  },
+  }
 };
 
 type Beacon = {
@@ -114,7 +117,7 @@ export default async (userConfiguration?: ConfigurationInput): Promise<Lightship
     done();
   });
 
-  app.get('/health', async (request, reply) => {
+  app.get(configuration.healthProbeEndpoint, async (request, reply) => {
     if (serverIsShuttingDown) {
       await reply
         .code(500)
@@ -129,7 +132,7 @@ export default async (userConfiguration?: ConfigurationInput): Promise<Lightship
     }
   });
 
-  app.get('/live', async (request, reply) => {
+  app.get(configuration.livenessProbeEndpoint, async (request, reply) => {
     if (serverIsShuttingDown) {
       await reply
         .code(500)
@@ -140,7 +143,7 @@ export default async (userConfiguration?: ConfigurationInput): Promise<Lightship
     }
   });
 
-  app.get('/ready', async (request, reply) => {
+  app.get(configuration.readinessProbeEndpoint, async (request, reply) => {
     if (isServerReady()) {
       await reply
         .send(SERVER_IS_READY);

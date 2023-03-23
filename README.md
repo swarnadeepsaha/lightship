@@ -1,3 +1,4 @@
+<a name="user-content-lightship"></a>
 <a name="lightship"></a>
 # Lightship 🚢
 
@@ -6,34 +7,35 @@
 [![Canonical Code Style](https://img.shields.io/badge/code%20style-canonical-blue.svg?style=flat-square)](https://github.com/gajus/canonical)
 [![Twitter Follow](https://img.shields.io/twitter/follow/kuizinas.svg?style=social&label=Follow)](https://twitter.com/kuizinas)
 
-(Please read [Best practices](#best-practices) section.)
+(Please read [Best practices](#user-content-best-practices) section.)
 
 Abstracts readiness, liveness and startup checks and graceful shutdown of Node.js services running in Kubernetes.
 
-* [Lightship 🚢](#lightship)
-    * [Behaviour](#lightship-behaviour)
-        * [Local-mode](#lightship-behaviour-local-mode)
-        * [`/health`](#lightship-behaviour-health)
-        * [`/live`](#lightship-behaviour-live)
-        * [`/ready`](#lightship-behaviour-ready)
-        * [Timeouts](#lightship-behaviour-timeouts)
-    * [Usage](#lightship-usage)
-        * [Kubernetes container probe configuration](#lightship-usage-kubernetes-container-probe-configuration)
-        * [Logging](#lightship-usage-logging)
-        * [Queueing service blocking tasks](#lightship-usage-queueing-service-blocking-tasks)
-        * [Waiting for the server to become ready](#lightship-usage-waiting-for-the-server-to-become-ready)
-    * [Usage examples](#lightship-usage-examples)
-        * [Using with Express.js](#lightship-usage-examples-using-with-express-js)
-        * [Beacons](#lightship-usage-examples-beacons)
-    * [Best practices](#lightship-best-practices)
-        * [Add a delay before stop handling incoming requests](#lightship-best-practices-add-a-delay-before-stop-handling-incoming-requests)
-    * [FAQ](#lightship-faq)
-        * [What is the reason that my liveness/ readiness endpoints are intermittently failing?](#lightship-faq-what-is-the-reason-that-my-liveness-readiness-endpoints-are-intermittently-failing)
-        * [What is the reason for having separate `/live` and `/ready` endpoints?](#lightship-faq-what-is-the-reason-for-having-separate-live-and-ready-endpoints)
-        * [How to detect what is holding the Node.js process alive?](#lightship-faq-how-to-detect-what-is-holding-the-node-js-process-alive)
-    * [Related projects](#lightship-related-projects)
+* [Lightship 🚢](#user-content-lightship)
+    * [Behaviour](#user-content-lightship-behaviour)
+        * [Local-mode](#user-content-lightship-behaviour-local-mode)
+        * [`/health`](#user-content-lightship-behaviour-health)
+        * [`/live`](#user-content-lightship-behaviour-live)
+        * [`/ready`](#user-content-lightship-behaviour-ready)
+        * [Timeouts](#user-content-lightship-behaviour-timeouts)
+    * [Usage](#user-content-lightship-usage)
+        * [Kubernetes container probe configuration](#user-content-lightship-usage-kubernetes-container-probe-configuration)
+        * [Logging](#user-content-lightship-usage-logging)
+        * [Queueing service blocking tasks](#user-content-lightship-usage-queueing-service-blocking-tasks)
+        * [Waiting for the server to become ready](#user-content-lightship-usage-waiting-for-the-server-to-become-ready)
+    * [Usage examples](#user-content-lightship-usage-examples)
+        * [Using with Express.js](#user-content-lightship-usage-examples-using-with-express-js)
+        * [Beacons](#user-content-lightship-usage-examples-beacons)
+    * [Best practices](#user-content-lightship-best-practices)
+        * [Add a delay before stop handling incoming requests](#user-content-lightship-best-practices-add-a-delay-before-stop-handling-incoming-requests)
+    * [FAQ](#user-content-lightship-faq)
+        * [What is the reason that my liveness/ readiness endpoints are intermittently failing?](#user-content-lightship-faq-what-is-the-reason-that-my-liveness-readiness-endpoints-are-intermittently-failing)
+        * [What is the reason for having separate `/live` and `/ready` endpoints?](#user-content-lightship-faq-what-is-the-reason-for-having-separate-live-and-ready-endpoints)
+        * [How to detect what is holding the Node.js process alive?](#user-content-lightship-faq-how-to-detect-what-is-holding-the-node-js-process-alive)
+    * [Related projects](#user-content-lightship-related-projects)
 
 
+<a name="user-content-lightship-behaviour"></a>
 <a name="lightship-behaviour"></a>
 ## Behaviour
 
@@ -44,11 +46,13 @@ Refer to the following Kubernetes documentation for information about the readin
 * [Pod Lifecycle](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/)
 * [Configure Liveness and Readiness Probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/)
 
+<a name="user-content-lightship-behaviour-local-mode"></a>
 <a name="lightship-behaviour-local-mode"></a>
 ### Local-mode
 
 If Lightship detects that it is running in a non-Kubernetes environment (e.g. your local machine) then it starts the HTTP service on any available HTTP port. This is done to avoid port collision when multiple services using Lightship are being developed on the same machine. This behaviour can be changed using `detectKubernetes` and `port` configuration.
 
+<a name="user-content-lightship-behaviour-health"></a>
 <a name="lightship-behaviour-health"></a>
 ### <code>/health</code>
 
@@ -62,6 +66,7 @@ The endpoint responds:
 
 Used for human inspection.
 
+<a name="user-content-lightship-behaviour-live"></a>
 <a name="lightship-behaviour-live"></a>
 ### <code>/live</code>
 
@@ -72,6 +77,7 @@ The endpoint responds:
 
 Used to configure liveness probe.
 
+<a name="user-content-lightship-behaviour-ready"></a>
 <a name="lightship-behaviour-ready"></a>
 ### <code>/ready</code>
 
@@ -82,17 +88,19 @@ The endpoint responds:
 
 Used to configure readiness probe.
 
+<a name="user-content-lightship-behaviour-timeouts"></a>
 <a name="lightship-behaviour-timeouts"></a>
 ### Timeouts
 
 Lightship has two timeout configurations: `gracefulShutdownTimeout` and `shutdownHandlerTimeout`.
 
-`gracefulShutdownTimeout` (default: 30 seconds) is a number of milliseconds Lightship waits for Node.js process to exit gracefully after it receives a shutdown signal (either via `process` or by calling `lightship.shutdown()`) before killing the process using `process.exit(1)`. This timeout should be sufficiently big to allow Node.js process to complete tasks (if any) that are active at the time that the shutdown signal is received (e.g. complete serving responses to all HTTP requests) (Note: You must explicitly inform Lightship about active tasks using [beacons](#beacons)).
+`gracefulShutdownTimeout` (default: 30 seconds) is a number of milliseconds Lightship waits for Node.js process to exit gracefully after it receives a shutdown signal (either via `process` or by calling `lightship.shutdown()`) before killing the process using `process.exit(1)`. This timeout should be sufficiently big to allow Node.js process to complete tasks (if any) that are active at the time that the shutdown signal is received (e.g. complete serving responses to all HTTP requests) (Note: You must explicitly inform Lightship about active tasks using [beacons](#user-content-beacons)).
 
 `shutdownHandlerTimeout` (default: 5 seconds) is a number of milliseconds Lightship waits for shutdown handlers (see `registerShutdownHandler`) to complete before killing the process using `process.exit(1)`.
 
-If after all beacons are dead and all shutdown handlers are resolved Node.js process does not exit gracefully, then Lightship will force terminate the process with an error. Refer to [How to detect what is holding the Node.js process alive?](#lightship-faq-how-to-detect-what-is-holding-the-node-js-process-alive).
+If after all beacons are dead and all shutdown handlers are resolved Node.js process does not exit gracefully, then Lightship will force terminate the process with an error. Refer to [How to detect what is holding the Node.js process alive?](#user-content-lightship-faq-how-to-detect-what-is-holding-the-node-js-process-alive).
 
+<a name="user-content-lightship-usage"></a>
 <a name="lightship-usage"></a>
 ## Usage
 
@@ -119,8 +127,11 @@ type ShutdownHandler = () => Promise<void> | void;
 
 /**
  * @property detectKubernetes Run Lightship in local mode when Kubernetes is not detected. Default: true.
- * @property gracefulShutdownTimeout A number of milliseconds before forcefull termination if process does not gracefully exit. The timer starts when `lightship.shutdown()` is called. This includes the time allowed to live beacons. Default: 30000.
- * @property port The port on which the Lightship service listens. This port must be different than your main service port, if any. The default port is 9000. The default can be overwritten using LIGHTSHIP_PORT environment variable.
+ * @property gracefulShutdownTimeout A number of milliseconds before forcefull termination if process does not gracefully exit. The timer starts when `lightship.shutdown()` is called. This includes the time allowed to live beacons and shutdown handlers. Default: 60000.
+ * @property port The port on which the Lightship service listens. This port must be different than your main service port, if any. The default port is 9000.
+ * @property healthProbeEndpoint Endpoint describes the current heath state of the service. The default is `/health`.
+ * @property livenessProbeEndpoint Endpoint describes the current liveness state of the service. The default is `/live`.
+ * @property readinessProbeEndpoint Endpoint describes the current readiness state of the service. The default is `/ready`.
  * @property shutdownDelay Delays the shutdown handler by X milliseconds. This value should match `readinessProbe.periodSeconds`. Default 5000.
  * @property shutdownHandlerTimeout A number of milliseconds before forcefull termination if shutdown handlers do not complete. The timer starts when the first shutdown handler is called. Default: 5000.
  * @property signals An a array of [signal events]{@link https://nodejs.org/api/process.html#process_signal_events}. Default: [SIGTERM].
@@ -130,6 +141,9 @@ export type ConfigurationInput = {|
   +detectKubernetes?: boolean,
   +gracefulShutdownTimeout?: number,
   +port?: number,
+  +healthProbeEndpoint?: string,
+  +livenessProbeEndpoint?: string,
+  +readinessProbeEndpoint?: string,
   +shutdownDelay?: number,
   +shutdownHandlerTimeout?: number,
   +signals?: $ReadOnlyArray<string>,
@@ -159,6 +173,7 @@ type Lightship = {|
 
 ```
 
+<a name="user-content-lightship-usage-kubernetes-container-probe-configuration"></a>
 <a name="lightship-usage-kubernetes-container-probe-configuration"></a>
 ### Kubernetes container probe configuration
 
@@ -205,6 +220,7 @@ startupProbe:
 
 ```
 
+<a name="user-content-lightship-usage-logging"></a>
 <a name="lightship-usage-logging"></a>
 ### Logging
 
@@ -212,6 +228,7 @@ startupProbe:
 
 Set `ROARR_LOG=true` environment variable to enable logging.
 
+<a name="user-content-lightship-usage-queueing-service-blocking-tasks"></a>
 <a name="lightship-usage-queueing-service-blocking-tasks"></a>
 ### Queueing service blocking tasks
 
@@ -246,6 +263,7 @@ const server = app.listen(8080, () => {
 
 ```
 
+<a name="user-content-lightship-usage-waiting-for-the-server-to-become-ready"></a>
 <a name="lightship-usage-waiting-for-the-server-to-become-ready"></a>
 ### Waiting for the server to become ready
 
@@ -281,9 +299,11 @@ const server = app.listen(8080, () => {
 
 ```
 
+<a name="user-content-lightship-usage-examples"></a>
 <a name="lightship-usage-examples"></a>
 ## Usage examples
 
+<a name="user-content-lightship-usage-examples-using-with-express-js"></a>
 <a name="lightship-usage-examples-using-with-express-js"></a>
 ### Using with Express.js
 
@@ -444,6 +464,7 @@ Do not call `process.exit()` in a shutdown handler – Lighthouse calls `proces
 
 If for whatever reason a registered shutdown handler hangs, then (subject to the Pod's [restart policy](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy)) Kubernetes will forcefully restart the Container after the `livenessProbe` deems the service to be failed.
 
+<a name="user-content-lightship-usage-examples-beacons"></a>
 <a name="lightship-usage-examples-beacons"></a>
 ### Beacons
 
@@ -517,9 +538,11 @@ The logs will include messages describing the beacons that are holding the conne
 
 ```
 
+<a name="user-content-lightship-best-practices"></a>
 <a name="lightship-best-practices"></a>
 ## Best practices
 
+<a name="user-content-lightship-best-practices-add-a-delay-before-stop-handling-incoming-requests"></a>
 <a name="lightship-best-practices-add-a-delay-before-stop-handling-incoming-requests"></a>
 ### Add a delay before stop handling incoming requests
 
@@ -534,9 +557,11 @@ Properly shutting down an application includes these steps:
 
 See [Handling Client Requests Properly with Kubernetes](https://web.archive.org/web/20200807161820/https://freecontent.manning.com/handling-client-requests-properly-with-kubernetes/) for more information.
 
+<a name="user-content-lightship-faq"></a>
 <a name="lightship-faq"></a>
 ## FAQ
 
+<a name="user-content-lightship-faq-what-is-the-reason-that-my-liveness-readiness-endpoints-are-intermittently-failing"></a>
 <a name="lightship-faq-what-is-the-reason-that-my-liveness-readiness-endpoints-are-intermittently-failing"></a>
 ### What is the reason that my liveness/ readiness endpoints are intermittently failing?
 
@@ -574,11 +599,13 @@ Your options are:
 * Use [`worker_threads`](https://nodejs.org/api/worker_threads.html) to execute the event-loop blocking task in the background.
 * Refactor the code into [synchronous chunks](https://nodejs.org/ru/docs/guides/dont-block-the-event-loop/).
 
+<a name="user-content-lightship-faq-what-is-the-reason-for-having-separate-live-and-ready-endpoints"></a>
 <a name="lightship-faq-what-is-the-reason-for-having-separate-live-and-ready-endpoints"></a>
 ### What is the reason for having separate <code>/live</code> and <code>/ready</code> endpoints?
 
-Distinct endpoints are needed if you want your Container to be able to take itself down for maintenance (as done in the [Using with Express.js](#lightship-usage-examples-using-with-express-js) usage example). Otherwise, you can use `/health`.
+Distinct endpoints are needed if you want your Container to be able to take itself down for maintenance (as done in the [Using with Express.js](#user-content-lightship-usage-examples-using-with-express-js) usage example). Otherwise, you can use `/health`.
 
+<a name="user-content-lightship-faq-how-to-detect-what-is-holding-the-node-js-process-alive"></a>
 <a name="lightship-faq-how-to-detect-what-is-holding-the-node-js-process-alive"></a>
 ### How to detect what is holding the Node.js process alive?
 
@@ -623,6 +650,7 @@ lightship.signalReady();
 
 In the above example, calling `whyIsNodeRunning` will print a list of all active handles that are keeping the process alive.
 
+<a name="user-content-lightship-related-projects"></a>
 <a name="lightship-related-projects"></a>
 ## Related projects
 

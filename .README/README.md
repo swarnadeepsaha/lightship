@@ -89,8 +89,11 @@ type ShutdownHandler = () => Promise<void> | void;
 
 /**
  * @property detectKubernetes Run Lightship in local mode when Kubernetes is not detected. Default: true.
- * @property gracefulShutdownTimeout A number of milliseconds before forcefull termination if process does not gracefully exit. The timer starts when `lightship.shutdown()` is called. This includes the time allowed to live beacons. Default: 30000.
- * @property port The port on which the Lightship service listens. This port must be different than your main service port, if any. The default port is 9000. The default can be overwritten using LIGHTSHIP_PORT environment variable.
+ * @property gracefulShutdownTimeout A number of milliseconds before forcefull termination if process does not gracefully exit. The timer starts when `lightship.shutdown()` is called. This includes the time allowed to live beacons and shutdown handlers. Default: 60000.
+ * @property port The port on which the Lightship service listens. This port must be different than your main service port, if any. The default port is 9000.
+ * @property healthProbeEndpoint Endpoint describes the current heath state of the service. The default is `/health`.
+ * @property livenessProbeEndpoint Endpoint describes the current liveness state of the service. The default is `/live`.
+ * @property readinessProbeEndpoint Endpoint describes the current readiness state of the service. The default is `/ready`.
  * @property shutdownDelay Delays the shutdown handler by X milliseconds. This value should match `readinessProbe.periodSeconds`. Default 5000.
  * @property shutdownHandlerTimeout A number of milliseconds before forcefull termination if shutdown handlers do not complete. The timer starts when the first shutdown handler is called. Default: 5000.
  * @property signals An a array of [signal events]{@link https://nodejs.org/api/process.html#process_signal_events}. Default: [SIGTERM].
@@ -100,6 +103,9 @@ export type ConfigurationInput = {|
   +detectKubernetes?: boolean,
   +gracefulShutdownTimeout?: number,
   +port?: number,
+  +healthProbeEndpoint?: string,
+  +livenessProbeEndpoint?: string,
+  +readinessProbeEndpoint?: string,
   +shutdownDelay?: number,
   +shutdownHandlerTimeout?: number,
   +signals?: $ReadOnlyArray<string>,
